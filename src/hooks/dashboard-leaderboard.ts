@@ -22,6 +22,8 @@ const LEADERBOARD_URL =
 const PAGE_SIZE = 500;
 let pending: Promise<ChapterLeader[]> | null = null;
 
+class StandingsChangedError extends Error {}
+
 async function loadLeaderboard(): Promise<ChapterLeader[]> {
   const leaders: ChapterLeader[] = [];
   const seen = new Set<string>();
@@ -41,7 +43,7 @@ async function loadLeaderboard(): Promise<ChapterLeader[]> {
       typeof page.hasMore !== "boolean" ||
       (totalMembers !== undefined && page.totalMembers !== totalMembers)
     ) {
-      throw new Error("Standings changed while loading. Please refresh.");
+      throw new StandingsChangedError("Standings changed while loading. Please refresh.");
     }
     totalMembers = page.totalMembers;
     for (const [index, row] of page.leaderboard.entries()) {
@@ -51,7 +53,7 @@ async function loadLeaderboard(): Promise<ChapterLeader[]> {
         !Number.isFinite(row.points) || !Number.isFinite(row.currentPoints) ||
         row.rank !== offset + index + 1 || !Array.isArray(row.badges)
       ) {
-        throw new Error("Standings changed while loading. Please refresh.");
+        throw new StandingsChangedError("Standings changed while loading. Please refresh.");
       }
       seen.add(row.id);
       leaders.push(row);
@@ -72,7 +74,12 @@ async function loadLeaderboard(): Promise<ChapterLeader[]> {
 /** Deduplicate concurrent views, without keeping an old response after it settles. */
 export function getChapterLeaderboard(): Promise<ChapterLeader[]> {
   if (!pending) {
-    pending = loadLeaderboard().finally(() => { pending = null; });
+    pending = loadLeaderboard().catch((error: unknown) => {
+      // A check-in can move a row between pages. Start over once before
+      // asking the visitor to retry, without ever publishing a partial list.
+      if (error instanceof StandingsChangedError) return loadLeaderboard();
+      throw error;
+    }).finally(() => { pending = null; });
   }
   return pending;
 }

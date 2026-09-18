@@ -178,3 +178,22 @@ test('refreshes on focus/visible intervals, pauses hidden tabs, and cleans up on
   timers.get(1)(); await new Promise(setImmediate); assert.equal(calls, 4);
   cleanup(); assert.equal(timers.size, 0); assert.deepEqual(Object.keys(events), []);
 });
+
+test('restarts once when a check-in moves a member across page boundaries', async () => {
+  const data = rows(701);
+  const offsets = [];
+  let changed = false;
+  const get = load(async (url) => {
+    const offset = Number(new URL(url).searchParams.get('offset'));
+    offsets.push(offset);
+    const result = page(data, offset);
+    if (offset && !changed) {
+      changed = true;
+      result.leaderboard[0] = { ...data[499], rank: 501 };
+    }
+    return response(result);
+  });
+  const loaded = await get();
+  assert.equal(loaded.length, 701);
+  assert.deepEqual(offsets, [0, 500, 0, 500]);
+});
