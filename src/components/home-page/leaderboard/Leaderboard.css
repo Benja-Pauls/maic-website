@@ -7,7 +7,25 @@
 
 .leaderboard-search {
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
+.leaderboard-search button {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: #1e1e1e;
+  color: #fff;
+  cursor: pointer;
+}
+
+.leaderboard-search button:disabled { opacity: 0.65; cursor: wait; }
+.leaderboard-search :focus-visible { outline: 2px solid #82b7ff; outline-offset: 2px; }
+.leaderboard-note, .leaderboard-status { font-size: 0.9rem; line-height: 1.5; }
+.leaderboard-note { color: #ccc; }
+.leaderboard-status { color: #ffd38a; }
 
 .leaderboard-search input {
   width: 100%;
@@ -96,6 +114,10 @@
 
 .custom-emoji {
   margin-right: 4px;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  vertical-align: middle;
 }
 
 .no-results {

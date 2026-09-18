@@ -503,6 +503,19 @@
   gap: 0.75rem;
 }
 
+.points-leaderboard-refresh {
+  display: block;
+  margin: 0 auto 1rem;
+  padding: 0.65rem 1rem;
+  color: rgb(var(--text-1));
+  background: var(--glass-primary);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.points-leaderboard-refresh:disabled { opacity: 0.65; cursor: wait; }
+.points-leaderboard-refresh:focus-visible { outline: 2px solid #82b7ff; outline-offset: 2px; }
+
 .points-leader {
   display: flex;
   align-items: center;

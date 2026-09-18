@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Points.css";
 import { FaTshirt } from "react-icons/fa";
 import { FaTicketAlt } from "react-icons/fa";
-import { getDashboardBundle, type DashboardLeader } from "../../hooks/dashboard-hook";
+import { useDashboardLeaderboard } from "../../hooks/use-dashboard-leaderboard";
 import { BadgeIcon } from "../badge-icon/BadgeIcon";
 
 
@@ -36,17 +35,7 @@ const activities = [
 
 function Points() {
   const navigate = useNavigate();
-  const [leaders, setLeaders] = useState<DashboardLeader[] | null>(null);
-
-  useEffect(() => {
-    let live = true;
-    getDashboardBundle().then((bundle) => {
-      if (live && bundle?.leaderboard?.length) setLeaders(bundle.leaderboard);
-    });
-    return () => {
-      live = false;
-    };
-  }, []);
+  const { leaders, error, loading, refresh } = useDashboardLeaderboard();
 
   return (
     <>
@@ -71,18 +60,19 @@ function Points() {
           </div>
         ))}
       </div>
-      {/* Live leaderboard. The copy above has always promised one ("climb the
-          leaderboard") without ever showing it — the standings live in the ALL
-          dashboard, so this is now the real thing rather than a screenshot
-          someone has to remember to update. Hidden entirely if unreachable. */}
-      {leaders && leaders.length > 0 && (
-        <div className="points-leaderboard">
-          <h1 className="points-leaderboard-title">Current Standings</h1>
+        <div className="points-leaderboard" aria-busy={loading}>
+          <h1 className="points-leaderboard-title">All-Time Standings</h1>
+          <button className="points-leaderboard-refresh" type="button" onClick={() => void refresh()} disabled={loading}>
+            {loading ? "Refreshing…" : "Refresh standings"}
+          </button>
+          {error && <p role="status">{error}{leaders !== null ? " Showing the last successfully loaded standings." : ""}</p>}
+          {leaders === null && !error && <p role="status">Loading current standings…</p>}
+          {leaders?.length === 0 && <p>No members ranked yet.</p>}
           <ol className="points-leaderboard-list">
-            {leaders.map((m) => (
+            {(leaders ?? []).slice(0, 20).map((m) => (
               <li
                 className={`points-leader${m.rank <= 3 ? ` points-leader--top points-leader--${m.rank}` : ""}`}
-                key={`${m.rank}-${m.name}`}
+                key={m.id}
               >
                 <span className="points-leader-rank">{m.rank}</span>
                 <span className="points-leader-name">
@@ -109,7 +99,6 @@ function Points() {
             ))}
           </ol>
         </div>
-      )}
 
       <div className="points-spend-container">
         <h1 className="points-spend-title">What Can You Do With Points?</h1>

@@ -6,6 +6,20 @@ This documentation is designed to help developers of all experience levels set u
 
 ## 🚀 Quick Start
 
+### Live points and membership
+
+The home and Points page standings read the ALL chapter roster through the public
+`/api/leaderboard?chapter=msoe-ai-club` endpoint. All-time points determine rank;
+current points are the balance available to spend. Both views refresh every minute
+while visible and when the visitor returns to the tab. The home page searches the
+complete roster, including chapters with more than 500 members.
+
+Point changes and event check-ins should be made in the ALL chapter dashboard.
+`maic-content/data/points/user_data.csv` is no longer a source for these standings.
+An API failure displays a retry notice instead of silently substituting old CSV
+numbers. Run the integration regression checks with
+`node --test scripts/test-live-leaderboard.cjs`.
+
 ### Prerequisites
 
 Before you begin, ensure you have the following installed on your computer:
